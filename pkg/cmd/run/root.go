@@ -85,6 +85,12 @@ var runCmd = &cobra.Command{
 		gw, err := run.NewGateway()
 		cobra.CheckErr(err)
 
+		ev, err := run.NewEvents(pool)
+
+		if err != nil {
+			cobra.CheckErr(err)
+		}
+
 		// Prepare development membrane to start
 		// This will start a single membrane that all
 		// running functions will connect to
@@ -94,6 +100,7 @@ var runCmd = &cobra.Command{
 			StoragePlugin:           sp,
 			DocumentPlugin:          dp,
 			GatewayPlugin:           gw,
+			EventsPlugin:            ev,
 			Pool:                    pool,
 			TolerateMissingServices: true,
 		})
