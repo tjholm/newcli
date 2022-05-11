@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os/exec"
 	"strings"
@@ -125,42 +126,37 @@ func imageNameFromBuildContext(dockerfile, srcPath, imageTag string, excludes []
 }
 
 func (d *docker) Build(dockerfile, srcPath, imageTag string, buildArgs map[string]string, excludes []string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), buildTimeout())
-	defer cancel()
+	args := []string{"build", srcPath, "-f", dockerfile, "-t", strings.ToLower(imageTag)}
+	for k, v := range buildArgs {
+		args = append(args, "--build-arg", fmt.Sprintf("%s=%s", k, v))
+	}
 
-	imageTagWithHash, err := imageNameFromBuildContext(dockerfile, srcPath, imageTag, excludes)
+	log.Default().Printf("Running docker %v\n", args)
+
+	cmd := exec.Command("docker", args...)
+	cmd.Env = []string{"DOCKER_BUILDKIT=1"}
+
+	// docker only outputs on stdErr
+	// stdout is reserved for artifacts for piping...
+	stdErr, err := cmd.StderrPipe()
+
 	if err != nil {
 		return err
 	}
 
-	buildContext, err := tarContextDir(dockerfile, srcPath, excludes)
-	if err != nil {
+	if err := cmd.Start(); err != nil {
+		log.Default().Printf("start error")
 		return err
 	}
 
-	// try and find an existing image with this hash.
-	listOpts := types.ImageListOptions{Filters: filters.NewArgs()}
-	listOpts.Filters.Add("reference", imageTagWithHash)
-	imageSummaries, err := d.cli.ImageList(ctx, listOpts)
-	if err == nil && len(imageSummaries) > 0 {
-		return nil
-	}
+	// log.Default().Printf("print err pip")
+	// // print output
+	// print(stdErr)
+	bts, _ := ioutil.ReadAll(stdErr)
 
-	opts := types.ImageBuildOptions{
-		SuppressOutput: false,
-		Dockerfile:     dockerfile,
-		Tags:           []string{strings.ToLower(imageTag), imageTagWithHash},
-		Remove:         true,
-		ForceRemove:    true,
-		PullParent:     true,
-	}
-	res, err := d.cli.ImageBuild(ctx, buildContext, opts)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
+	log.Default().Printf(string(bts))
 
-	return print(res.Body)
+	return cmd.Wait()
 }
 
 type ErrorLine struct {

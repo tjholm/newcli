@@ -73,7 +73,7 @@ WORKDIR /app/
 
 COPY . .
 
-RUN --mount=type=cache,target=/root/.cache/go-build go build -o /bin/main ./%s/...
+RUN --mount=type=cache,id=gomod,target=/go/pkg/mod --mount=type=cache,id=gobuild,target=/root/.cache/go-build go build -o /bin/main ./%s/...
 
 FROM alpine
 

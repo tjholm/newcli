@@ -86,7 +86,26 @@ func (p *podman) Version() string {
 }
 
 func (p *podman) Build(dockerfile, path, imageTag string, buildArgs map[string]string, excludes []string) error {
-	return p.docker.Build(dockerfile, path, imageTag, buildArgs, excludes)
+	args := []string{"build", path, "-f", dockerfile, "-t", strings.ToLower(imageTag)}
+	for k, v := range buildArgs {
+		args = append(args, "--build-arg", fmt.Sprint("%s=%s", k, v))
+	}
+
+	cmd := exec.Command("podman", args...)
+	reader, writer := io.Pipe()
+
+	// docker only outputs on stdErr
+	// stdout is reserved for artifacts for piping...
+	cmd.Stdout = writer
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	// print stdout
+	go print(reader)
+
+	return cmd.Wait()
 }
 
 func (p *podman) ListImages(stackName, containerName string) ([]Image, error) {
