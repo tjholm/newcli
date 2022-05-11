@@ -26,7 +26,6 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/strslice"
 
-	"github.com/nitrictech/boxygen/pkg/backend/dockerfile"
 	"github.com/nitrictech/cli/pkg/utils"
 )
 
@@ -55,78 +54,52 @@ func (t *golang) ContainerName() string {
 	return filepath.Base(filepath.Dir(absH))
 }
 
+// dockerfile for running requirements collection and development runs
+const devDockerfile = `# syntax = docker/dockerfile:1.3
+FROM golang:alpine
+
+RUN apk add --no-cache git
+RUN go install github.com/asalkeld/CompileDaemon@d4b10de
+`
+
+// final production image for running in the cloud
+const prodDockerfile = `# syntax = docker/dockerfile:1.3
+FROM golang:alpine as build
+RUN apk update
+RUN apk upgrade
+RUN apk add --no-cache git gcc g++ make
+
+WORKDIR /app/
+
+COPY . .
+
+RUN --mount=type=cache,target=/root/.cache/go-build go build -o /bin/main ./%s/...
+
+FROM alpine
+
+RUN apk add --no-cache tzdata
+ADD %s /bin/membrane
+RUN chmod +x /bin/membrane
+
+COPY --from=build /bin/main /bin/main
+
+RUN chmod +x-rw /bin/main
+
+EXPOSE 9001
+
+ENTRYPOINT /bin/membrane
+CMD /bin/main
+`
+
 func (t *golang) FunctionDockerfile(funcCtxDir, version, provider string, w io.Writer) error {
-	buildCon, err := dockerfile.NewContainer(dockerfile.NewContainerOpts{
-		From:   "golang:alpine",
-		As:     "build",
-		Ignore: t.BuildIgnore(),
-	})
-	if err != nil {
-		return err
-	}
+	dockerfile := fmt.Sprintf(prodDockerfile, filepath.Dir(t.handler), membraneUrl(version, provider))
 
-	buildCon.Run(dockerfile.RunOptions{Command: []string{"apk", "update"}})
-	buildCon.Run(dockerfile.RunOptions{Command: []string{"apk", "upgrade"}})
-	buildCon.Run(dockerfile.RunOptions{Command: []string{"apk", "add", "--no-cache", "git", "gcc", "g++", "make"}})
-	buildCon.Config(dockerfile.ConfigOptions{
-		WorkingDir: "/app/",
-	})
-
-	err = buildCon.Copy(dockerfile.CopyOptions{Src: "go.mod *.sum", Dest: "./"})
-	if err != nil {
-		return err
-	}
-	buildCon.Run(dockerfile.RunOptions{Command: []string{"go", "mod", "download"}})
-	err = buildCon.Copy(dockerfile.CopyOptions{Src: ".", Dest: "."})
-	if err != nil {
-		return err
-	}
-
-	buildCon.Run(dockerfile.RunOptions{
-		Command: []string{
-			"go", "build", "-o", "/bin/main", "./" + filepath.Dir(t.handler) + "/...",
-		},
-	})
-
-	con, err := dockerfile.NewContainer(dockerfile.NewContainerOpts{
-		From:   "alpine",
-		Ignore: []string{},
-	})
-	if err != nil {
-		return err
-	}
-
-	withMembrane(con, version, provider)
-
-	err = con.Copy(dockerfile.CopyOptions{Src: "/bin/main", Dest: "/bin/main", From: "build"})
-	if err != nil {
-		return err
-	}
-	con.Run(dockerfile.RunOptions{Command: []string{"chmod", "+x-rw", "/bin/main"}})
-	con.Run(dockerfile.RunOptions{Command: []string{"apk", "add", "--no-cache", "tzdata"}})
-
-	con.Config(dockerfile.ConfigOptions{
-		Ports:      []int32{9001},
-		WorkingDir: "/",
-		Cmd:        []string{"/bin/main"},
-	})
-
-	_, err = w.Write([]byte(strings.Join(append(buildCon.Lines(), con.Lines()...), "\n")))
+	_, err := w.Write([]byte(dockerfile))
 	return err
 }
 
 func (t *golang) FunctionDockerfileForCodeAsConfig(w io.Writer) error {
-	con, err := dockerfile.NewContainer(dockerfile.NewContainerOpts{
-		From:   "golang:alpine",
-		Ignore: t.BuildIgnore(),
-	})
-	if err != nil {
-		return err
-	}
-	con.Run(dockerfile.RunOptions{Command: []string{"apk", "add", "--no-cache", "git"}})
-	con.Run(dockerfile.RunOptions{Command: []string{"go", "install", "github.com/asalkeld/CompileDaemon@d4b10de"}})
-
-	_, err = w.Write([]byte(strings.Join(con.Lines(), "\n")))
+	_, err := w.Write([]byte(devDockerfile))
 	return err
 }
 
