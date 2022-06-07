@@ -344,7 +344,6 @@ func (a *azureProvider) newContainerApp(ctx *pulumi.Context, name string, args *
 					PasswordSecretRef: pulumi.String("pwd"),
 				},
 			},
-			Dapr: app.DaprArgs{},
 			Secrets: app.SecretArray{
 				app.SecretArgs{
 					Name:  pulumi.String("pwd"),
