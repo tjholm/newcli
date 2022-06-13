@@ -337,6 +337,12 @@ func (a *azureProvider) newContainerApp(ctx *pulumi.Context, name string, args *
 				External:   pulumi.BoolPtr(true),
 				TargetPort: pulumi.Int(9001),
 			},
+			Dapr: &app.DaprArgs{
+				AppId:       pulumi.String(cAppName),
+				AppPort:     pulumi.Int(9001),
+				AppProtocol: pulumi.String("http"),
+				Enabled:     pulumi.Bool(true),
+			},
 			Registries: app.RegistryCredentialsArray{
 				app.RegistryCredentialsArgs{
 					Server:            args.Registry.LoginServer,
