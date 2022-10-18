@@ -102,6 +102,7 @@ func newLambda(ctx *pulumi.Context, name string, args *LambdaArgs, opts ...pulum
 		"Statement": []map[string]interface{}{
 			{
 				"Action": []string{
+					"apis:GET",
 					"sns:ListTopics",
 					"sqs:ListQueues",
 					"dynamodb:ListTables",
