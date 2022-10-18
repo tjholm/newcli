@@ -34,6 +34,7 @@ import (
 	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/serviceaccount"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 
+	"github.com/nitrictech/cli/pkg/provider/pulumi/common"
 	"github.com/nitrictech/cli/pkg/utils"
 	v1 "github.com/nitrictech/nitric/pkg/api/nitric/v1"
 )
@@ -266,6 +267,7 @@ func newApiGateway(ctx *pulumi.Context, name string, args *ApiGatewayArgs, opts 
 		DisplayName: pulumi.String(name + "-gateway"),
 		GatewayId:   pulumi.String(name + "-gateway"),
 		ApiConfig:   pulumi.Sprintf("projects/%s/locations/global/apis/%s/configs/%s", args.ProjectId, res.Api.ApiId, config.ApiConfigId),
+		Labels:      common.Tags(ctx, name),
 	}, opts...)
 	if err != nil {
 		return nil, errors.WithMessage(err, "api gateway")
