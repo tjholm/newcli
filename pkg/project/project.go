@@ -461,9 +461,10 @@ func (p *Project) CollectWebsiteRequirements() ([]*deploymentpb.Website, error) 
 		}
 
 		allWebsiteRequirements = append(allWebsiteRequirements, &deploymentpb.Website{
-			BasePath:      site.path,
-			IndexDocument: site.indexPage,
-			ErrorDocument: site.errorPage,
+			BasePath:        site.path,
+			IndexDocument:   site.indexPage,
+			ErrorDocument:   site.errorPage,
+			ResponseHeaders: site.headers,
 			AssetSource: &deploymentpb.Website_LocalDirectory{
 				LocalDirectory: outputDir,
 			},
