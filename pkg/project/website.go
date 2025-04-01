@@ -51,6 +51,9 @@ type Website struct {
 
 	// error page for the website
 	errorPage string
+
+	// headers returned for the website
+	headers map[string]string
 }
 
 func (s *Website) GetOutputPath() string {

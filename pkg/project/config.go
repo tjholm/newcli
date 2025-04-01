@@ -97,11 +97,12 @@ type Dev struct {
 type WebsiteConfiguration struct {
 	BaseServiceConfiguration `yaml:",inline"`
 
-	Build     Build  `yaml:"build"`
-	Dev       Dev    `yaml:"dev"`
-	Path      string `yaml:"path"`
-	IndexPage string `yaml:"index,omitempty"`
-	ErrorPage string `yaml:"error,omitempty"`
+	Build     Build             `yaml:"build"`
+	Dev       Dev               `yaml:"dev"`
+	Path      string            `yaml:"path"`
+	IndexPage string            `yaml:"index,omitempty"`
+	ErrorPage string            `yaml:"error,omitempty"`
+	Headers   map[string]string `yaml:"headers,omitempty"`
 }
 
 type ProjectConfiguration struct {

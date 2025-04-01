@@ -851,6 +851,7 @@ func fromProjectConfiguration(projectConfig *ProjectConfiguration, localConfig *
 			devURL:     websiteSpec.Dev.URL,
 			indexPage:  websiteSpec.IndexPage,
 			errorPage:  websiteSpec.ErrorPage,
+			headers:    websiteSpec.Headers,
 		})
 	}
 
