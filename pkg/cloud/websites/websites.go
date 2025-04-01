@@ -131,6 +131,11 @@ func (h staticSiteHandler) serveProxy(res http.ResponseWriter, req *http.Request
 			}
 		}
 	}
+
+	for k, v := range h.website.ResponseHeaders {
+		res.Header().Add(k, v)
+	}
+
 	proxy.ServeHTTP(res, req)
 }
 
@@ -155,6 +160,10 @@ func (h staticSiteHandler) serveStatic(res http.ResponseWriter, req *http.Reques
 		http.ServeFile(res, req, filepath.Join(h.website.OutputDirectory, h.website.IndexDocument))
 
 		return
+	}
+
+	for k, v := range h.website.ResponseHeaders {
+		res.Header().Add(k, v)
 	}
 
 	http.FileServer(http.Dir(h.website.OutputDirectory)).ServeHTTP(res, req)

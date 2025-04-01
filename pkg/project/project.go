@@ -632,9 +632,10 @@ func (p *Project) RunWebsites(localCloud *cloud.LocalCloud) error {
 			Directory:       absBaseDir,
 			OutputDirectory: outputDir,
 			WebsitePb: &websites.WebsitePb{
-				BasePath:      site.path,
-				IndexDocument: site.indexPage,
-				ErrorDocument: site.errorPage,
+				BasePath:        site.path,
+				IndexDocument:   site.indexPage,
+				ErrorDocument:   site.errorPage,
+				ResponseHeaders: site.headers,
 				AssetSource: &deploymentpb.Website_LocalDirectory{
 					LocalDirectory: outputDir,
 				},
