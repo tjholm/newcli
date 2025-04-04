@@ -68,3 +68,7 @@ generate_check: generate fmt
 
 .PHONY: check
 check: lint test generate_check
+
+.PHONY: schema
+schema: 
+	@go run ./hack/gen_schema

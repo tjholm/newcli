@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nitrictech/cli/pkg/infra/schema",
+  "$ref": "#/$defs/Schema",
+  "$defs": {
+    "DockerFileRuntime": {
+      "properties": {
+        "dockerfile": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "dockerfile"
+      ]
+    },
+    "DockerImageRuntime": {
+      "properties": {
+        "image": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "image"
+      ]
+    },
+    "Runtime": {
+      "oneOf": [
+        {
+          "required": [
+            "dockerfile"
+          ],
+          "title": "dockerfile"
+        },
+        {
+          "required": [
+            "docker"
+          ],
+          "title": "docker"
+        }
+      ],
+      "properties": {
+        "dockerfile": {
+          "$ref": "#/$defs/DockerFileRuntime"
+        },
+        "docker": {
+          "$ref": "#/$defs/DockerImageRuntime"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Schema": {
+      "properties": {
+        "services": {
+          "items": {
+            "$ref": "#/$defs/Service"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "services"
+      ]
+    },
+    "Service": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "serverless",
+            "container"
+          ]
+        },
+        "port": {
+          "type": "integer"
+        },
+        "lang": {
+          "type": "string"
+        },
+        "runtime": {
+          "$ref": "#/$defs/Runtime"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "type",
+        "port",
+        "lang",
+        "runtime"
+      ]
+    }
+  }
+}
