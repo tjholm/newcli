@@ -2,7 +2,7 @@ package infra
 
 type Bucket struct {
 	Name     string          `json:"name"`
-	Triggers []BucketTrigger `json:"triggers"`
+	Triggers []BucketTrigger `json:"triggers,omitempty"`
 }
 
 type BucketTriggerType string

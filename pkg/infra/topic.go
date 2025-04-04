@@ -2,7 +2,7 @@ package infra
 
 type Topic struct {
 	Name     string         `json:"name"`
-	Triggers []TopicTrigger `json:"triggers"`
+	Triggers []TopicTrigger `json:"triggers,omitempty"`
 }
 
 type TopicTriggerType string

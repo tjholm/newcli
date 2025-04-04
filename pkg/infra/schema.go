@@ -1,9 +1,9 @@
 package infra
 
 type Schema struct {
-	Services    []Service    `json:"services"`
-	Entrypoints []Entrypoint `json:"entrypoints"`
-	Websites    []Website    `json:"websites"`
-	Topics      []Topic      `json:"topics"`
-	Buckets     []Bucket     `json:"buckets"`
+	Services    []Service    `json:"services,omitempty"`
+	Entrypoints []Entrypoint `json:"entrypoints,omitempty"`
+	Websites    []Website    `json:"websites,omitempty"`
+	Topics      []Topic      `json:"topics,omitempty"`
+	Buckets     []Bucket     `json:"buckets,omitempty"`
 }
