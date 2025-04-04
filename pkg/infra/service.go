@@ -13,4 +13,12 @@ type Service struct {
 	Port    int         `json:"port"`
 	Lang    string      `json:"lang"`
 	Runtime Runtime     `json:"runtime"`
+	Dev     *ServiceDev `json:"dev,omitempty"`
+}
+
+type ServiceDev struct {
+	// The port that the dev server will run on
+	Port int `json:"port"`
+	// The command to run the service
+	Run string `json:"run"`
 }
