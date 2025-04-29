@@ -88,13 +88,16 @@ type BuildxBuilder struct {
 }
 
 // Create a known nitric container builder to allow custom cache configuration
-func (d *Docker) createBuildxBuilder() (*BuildxBuilder, error) {
+func (d *Docker) createBuildxBuilder(logger io.Writer) (*BuildxBuilder, error) {
 	builderLock.Lock()
 	defer builderLock.Unlock() // Create a known fixed nitric builder to allow caching
 
 	builderName := "nitric"
 
 	cmd := exec.Command("docker", "buildx", "create", "--name", builderName, "--bootstrap", "--driver=docker-container", "--node", "nitric0")
+
+	cmd.Stdout = logger
+	cmd.Stderr = logger
 
 	if err := cmd.Run(); err != nil {
 		return nil, err
@@ -159,7 +162,7 @@ func (d *Docker) Build(dockerfile, srcPath, imageTag string, options ...DockerBu
 	if err := tui.DockerAvailable(); err == nil && opts.useBuilder {
 		var err error
 
-		builder, err = d.createBuildxBuilder()
+		builder, err = d.createBuildxBuilder(opts.logger)
 		if err != nil {
 			return err
 		}

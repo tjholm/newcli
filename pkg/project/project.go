@@ -142,6 +142,15 @@ func (p *Project) BuildServices(fs afero.Fs, useBuilder bool) (chan ServiceBuild
 		// Create writer
 		serviceBuildUpdateWriter := NewBuildUpdateWriter(service.Name, updatesChan)
 
+		// create a file writer
+		buildLogFile, err := afero.TempFile(fs, ".nitric/build", fmt.Sprintf("%s-*.log", service.Name))
+		if err != nil {
+			return nil, fmt.Errorf("unable to create build log file for service %s: %w", service.Name, err)
+		}
+
+		// combine the service build update writer with a file writer
+		serviceBuildUpdateWriter = io.MultiWriter(serviceBuildUpdateWriter, buildLogFile)
+
 		go func(svc Service, writer io.Writer) {
 			// Acquire a token by filling the maxConcurrentBuilds channel
 			// this will block once the buffer is full
