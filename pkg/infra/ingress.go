@@ -7,7 +7,7 @@ const (
 	TargetType_Website TargetType = "website"
 )
 
-type Entrypoint struct {
+type Ingress struct {
 	Name    string   `json:"name"`
 	Targets []Target `json:"targets"`
 }
